@@ -8,14 +8,22 @@
 		this.currentNonValidatedElements = [];
 	};
 
-	ConDecTextClassification.prototype.init = function () {
+	ConDecTextClassification.prototype.init = function (isJiraIssueView = false) {
+		if (isJiraIssueView) {
+			this.viewIdentifier = "jira-issue-module";
+		}
+		else {
+			this.viewIdentifier = "decision-knowledge-page";
+		}
+
 		this.issueId = JIRA.Issue.getIssueId();
 		this.issueKey = conDecAPI.getIssueKey();
 
-		this.nonValidatedTableElement = document.getElementById("non-validated-table");
-		this.nonValidatedTableContentElement = document.getElementById("non-validated-table-content");
-		this.loadingSpinnerElement = document.getElementById("classification-loading-spinner");
-		this.validateAllButton = document.getElementById("validate-all-elements-button");
+		this.nonValidatedTableElement = document.getElementById(`non-validated-table-${this.viewIdentifier}`);
+		this.nonValidatedTableContentElement = document.getElementById(`non-validated-table-content-${this.viewIdentifier}`);
+		this.loadingSpinnerElement = document.getElementById(`classification-loading-spinner-${this.viewIdentifier}`);
+		this.validateAllButton = document.getElementById(`validate-all-elements-button-${this.viewIdentifier}`);
+
 		conDecObservable.subscribe(this);
 		this.loadData();
 	}
@@ -47,7 +55,7 @@
 			}
 		}
 		AJS.tabs.setup();
-		conDecNudgingAPI.decideAmbientFeedbackForTab(nonValidatedElementsList.length, "menu-item-text-classification");
+		conDecNudgingAPI.decideAmbientFeedbackForTab(nonValidatedElementsList.length, `menu-item-text-classification-${this.viewIdentifier}`);
 	};
 
 	let generateTableRow = function (nonValidatedElement) {
@@ -83,7 +91,7 @@
 	ConDecTextClassification.prototype.loadData = function () {
 		startLoadingVisualization(this.nonValidatedTableElement, this.loadingSpinnerElement);
 		conDecTextClassificationAPI.getNonValidatedElements(this.projectKey, this.issueKey)
-			.then((result) => this.displayNonValidatedElements(result["nonValidatedElements"]))
+			.then((result) => this.displayNonValidatedElements(result["nonValidatedElements"], this.viewIdentifier))
 			.catch((error) => displayErrorMessage(error))
 			.finally(() => stopLoadingVisualization(this.nonValidatedTableElement, this.loadingSpinnerElement)
 			);

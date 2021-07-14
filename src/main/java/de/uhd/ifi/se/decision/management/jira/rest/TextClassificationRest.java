@@ -224,6 +224,39 @@ public class TextClassificationRest {
 		return Response.ok().entity(ImmutableMap.of("nonValidatedElements", nonValidatedElements)).build();
 	}
 
+	/**
+	 * if no issue key is provided, gets all the issues
+	 * @param request
+	 * @param projectKey
+	 * @return
+	 */
+	@Path("/getAllNonValidatedElements")
+	@GET
+	public Response getAllNonValidatedElements(@Context HttpServletRequest request, @QueryParam("projectKey") String projectKey) {
+
+		if (request == null || projectKey == null) {
+			return Response.status(Response.Status.BAD_REQUEST)
+				.entity(ImmutableMap.of("error", "Non-validated elements could not be found due to a bad request."))
+				.build();
+		}
+		ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+
+		List<Issue> issues = JiraIssuePersistenceManager.getAllJiraIssuesForProject(user, projectKey);
+		JiraIssueTextPersistenceManager manager = new JiraIssueTextPersistenceManager(projectKey);
+		List<KnowledgeElement> nonValidatedElements = new ArrayList<KnowledgeElement>();
+
+		for (Issue issue : issues) {
+			List<KnowledgeElement> elements = manager.getElementsInJiraIssue(issue.getId());
+			for (KnowledgeElement element : elements) {
+				PartOfJiraIssueText issueTextPart = (PartOfJiraIssueText) element;
+				if (!issueTextPart.isValidated()) {
+					nonValidatedElements.add(issueTextPart);
+				}
+			}
+		}
+		return Response.ok().entity(ImmutableMap.of("nonValidatedElements", nonValidatedElements)).build();
+	}
+
 	@Path("/validateAllElements")
 	@POST
 	public Response validateAllElements(@Context HttpServletRequest request, @QueryParam("projectKey") String projectKey, @QueryParam("issueKey") String issueKey) {
