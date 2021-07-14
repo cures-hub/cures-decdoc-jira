@@ -13,57 +13,52 @@ import de.uhd.ifi.se.decision.management.jira.persistence.ConfigPersistenceManag
  * Checks whether a decision problem (=issue, question, goal, ...) fulfills the
  * {@link DefinitionOfDone}.
  */
-public class DecisionProblemCompletenessCheck implements CompletenessCheck<KnowledgeElement> {
+public class IssueCheck implements KnowledgeElementCheck {
 
-	private final String ISSUEDOESNTHAVEDECISION = "Issue doesn't have a valid decision!";
-	private final String ISSUEISUNRESOLVED = "Issue is unresolved!";
-	private final String ISSUEDOESNTHAVEALTERNATIVE = "Issue doesn't have an alternative!";
-
-	private KnowledgeElement decisionProblem;
+	private KnowledgeElement issue;
 	private String projectKey;
 
 	@Override
 	public boolean execute(KnowledgeElement decisionProblem) {
-		this.decisionProblem = decisionProblem;
+		this.issue = decisionProblem;
 		projectKey = decisionProblem.getProject().getProjectKey();
-		return isCompleteAccordingToDefault() && isCompleteAccordingToSettings();
+		DefinitionOfDone definitionOfDone = ConfigPersistenceManager.getDefinitionOfDone(projectKey);
+		return isCompleteAccordingToDefault() && isCompleteAccordingToSettings(definitionOfDone);
 	}
 
 	@Override
 	public boolean isCompleteAccordingToDefault() {
-		return isValidDecisionLinkedToDecisionProblem(decisionProblem)
-				&& decisionProblem.getStatus() != KnowledgeStatus.UNRESOLVED;
+		return isValidDecisionLinkedToDecisionProblem(issue) && issue.getStatus() != KnowledgeStatus.UNRESOLVED;
 	}
 
 	@Override
-	public boolean isCompleteAccordingToSettings() {
-		boolean hasToBeLinkedToAlternative = ConfigPersistenceManager.getDefinitionOfDone(projectKey)
-				.isIssueIsLinkedToAlternative();
+	public boolean isCompleteAccordingToSettings(DefinitionOfDone definitionOfDone) {
+		boolean hasToBeLinkedToAlternative = definitionOfDone.isIssueIsLinkedToAlternative();
 		if (hasToBeLinkedToAlternative) {
-			return decisionProblem.hasNeighborOfType(KnowledgeType.ALTERNATIVE);
+			return issue.hasNeighborOfType(KnowledgeType.ALTERNATIVE);
 		}
 		return true;
 	}
 
 	@Override
-	public List<String> getFailedCriteria(KnowledgeElement decisionProblem) {
-		List<String> failedCriteria = new ArrayList<>();
+	public List<QualityProblem> getQualityProblems(KnowledgeElement decisionProblem,
+			DefinitionOfDone definitionOfDone) {
+		List<QualityProblem> qualityProblems = new ArrayList<>();
 
 		if (!isValidDecisionLinkedToDecisionProblem(decisionProblem)) {
-			failedCriteria.add(ISSUEDOESNTHAVEDECISION);
+			qualityProblems.add(QualityProblem.ISSUE_DOESNT_HAVE_DECISION);
 		}
 
 		if (decisionProblem.getStatus() == KnowledgeStatus.UNRESOLVED) {
-			failedCriteria.add(ISSUEISUNRESOLVED);
+			qualityProblems.add(QualityProblem.ISSUE_IS_UNRESOLVED);
 		}
 
-		boolean hasToBeLinkedToAlternative = ConfigPersistenceManager.getDefinitionOfDone(projectKey)
-			.isIssueIsLinkedToAlternative();
+		boolean hasToBeLinkedToAlternative = definitionOfDone.isIssueIsLinkedToAlternative();
 		if (hasToBeLinkedToAlternative && !decisionProblem.hasNeighborOfType(KnowledgeType.ALTERNATIVE)) {
-			failedCriteria.add(ISSUEDOESNTHAVEALTERNATIVE);
+			qualityProblems.add(QualityProblem.ISSUE_DOESNT_HAVE_ALTERNATIVE);
 		}
 
-		return failedCriteria;
+		return qualityProblems;
 	}
 
 	/**
@@ -75,8 +70,8 @@ public class DecisionProblemCompletenessCheck implements CompletenessCheck<Knowl
 		Set<KnowledgeElement> linkedDecisions = decisionProblem.getNeighborsOfType(KnowledgeType.DECISION);
 		linkedDecisions.addAll(decisionProblem.getNeighborsOfType(KnowledgeType.SOLUTION));
 		return !linkedDecisions.isEmpty()
-			&& linkedDecisions.stream().anyMatch(decision -> decision.getStatus() != KnowledgeStatus.CHALLENGED
-			&& decision.getStatus() != KnowledgeStatus.REJECTED);
+				&& linkedDecisions.stream().anyMatch(decision -> decision.getStatus() != KnowledgeStatus.CHALLENGED
+						&& decision.getStatus() != KnowledgeStatus.REJECTED);
 	}
 
 }

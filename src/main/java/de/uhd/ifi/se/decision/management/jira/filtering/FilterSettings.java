@@ -33,7 +33,7 @@ import de.uhd.ifi.se.decision.management.jira.model.LinkType;
 import de.uhd.ifi.se.decision.management.jira.persistence.ConfigPersistenceManager;
 import de.uhd.ifi.se.decision.management.jira.persistence.KnowledgePersistenceManager;
 import de.uhd.ifi.se.decision.management.jira.persistence.singlelocations.AbstractPersistenceManagerForSingleLocation;
-import de.uhd.ifi.se.decision.management.jira.quality.completeness.CompletenessCheck;
+import de.uhd.ifi.se.decision.management.jira.quality.completeness.KnowledgeElementCheck;
 import de.uhd.ifi.se.decision.management.jira.quality.completeness.DefinitionOfDone;
 import de.uhd.ifi.se.decision.management.jira.view.vis.VisGraph;
 
@@ -395,7 +395,7 @@ public class FilterSettings {
 	 * @return true if only incompletely documented knowledge elements according to
 	 *         the {@link DefinitionOfDone} are shown in the filtered graph.
 	 *
-	 * @see CompletenessCheck
+	 * @see KnowledgeElementCheck
 	 */
 	public boolean isOnlyIncompleteKnowledgeShown() {
 		return isOnlyIncompleteKnowledgeShown;
@@ -407,7 +407,7 @@ public class FilterSettings {
 	 *            to the {@link DefinitionOfDone} should be shown in the filtered
 	 *            graph.
 	 *
-	 * @see CompletenessCheck
+	 * @see KnowledgeElementCheck
 	 */
 	@JsonProperty("isOnlyIncompleteKnowledgeShown")
 	public void setOnlyIncompleteKnowledgeShown(boolean isOnlyIncompleteKnowledgeShown) {

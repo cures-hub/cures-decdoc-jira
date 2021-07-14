@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
+import de.uhd.ifi.se.decision.management.jira.git.model.ChangedFile;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeType;
+import de.uhd.ifi.se.decision.management.jira.testdata.CodeFiles;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,116 +43,132 @@ public class TestChecks extends TestSetUp {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedDefinitionOfDoneCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 
 		settings.setSelectedElement((KnowledgeElement) null);
-		response = dodCheckingRest.getFailedDefinitionOfDoneCriteria(request, settings);
+		response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(400, response.getStatus());
-
-		response = dodCheckingRest.getFailedDefinitionOfDoneCriteria(request, null);
-		assertEquals(400, response.getStatus());
-
-		settings.setProjectKey(null);
-		response = dodCheckingRest.getFailedDefinitionOfDoneCriteria(request, settings);
-		assertEquals(400, response.getStatus());
-	}
-
-	@Test
-	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteria() {
-		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
-		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
-		assertEquals(200, response.getStatus());
 
-		settings.setSelectedElement((KnowledgeElement) null);
-		response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
-		assertEquals(400, response.getStatus());
-
-		response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, null);
+		response = dodCheckingRest.getQualityProblems(request, null);
 		assertEquals(400, response.getStatus());
 
 		settings.setProjectKey(null);
-		response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(400, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaIssue() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaIssue() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.ISSUE);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaDecision() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaDecision() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.DECISION);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaAlternative() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaAlternative() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.ALTERNATIVE);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaArgument() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaArgument() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.ARGUMENT);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaPro() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaPro() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.PRO);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaCon() {
+	public void testGetFailedDefinitionOfDoneCheckCriteriaCon() {
 		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
 		knowledgeElement.setType(KnowledgeType.CON);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
 	}
 
 	@Test
 	@NonTransactional
-	public void testGetFailedCompletenessCheckCriteriaCode() {
-		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
+	public void testGetFailedDefinitionOfDoneCheckCriteriaCode() {
+		ChangedFile knowledgeElement = CodeFiles.getTestCodeFileDone();
 		knowledgeElement.setType(KnowledgeType.CODE);
 		settings = new FilterSettings("TEST", "");
 		settings.setSelectedElement(knowledgeElement);
-		Response response = dodCheckingRest.getFailedCompletenessCheckCriteria(request, settings);
+		Response response = dodCheckingRest.getQualityProblems(request, settings);
 		assertEquals(200, response.getStatus());
+	}
+
+	@Test
+	@NonTransactional
+	public void testGetCoverageOfJiraIssue() {
+		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
+		settings = new FilterSettings("TEST", "");
+		settings.setSelectedElement(knowledgeElement);
+		Response response = dodCheckingRest.getCoverageOfJiraIssue(request, settings);
+		assertEquals(200, response.getStatus());
+	}
+
+	@Test
+	@NonTransactional
+	public void testGetCoverageOfJiraIssueFilterSettingsInvalid() {
+		Response response = dodCheckingRest.getCoverageOfJiraIssue(request, null);
+		assertEquals(400, response.getStatus());
+	}
+
+	@Test
+	@NonTransactional
+	public void testGetCoverageOfJiraIssueProjectKeyInvalid() {
+		KnowledgeElement knowledgeElement = KnowledgeElements.getTestKnowledgeElement();
+		settings = new FilterSettings(null, "");
+		settings.setSelectedElement(knowledgeElement);
+		Response response = dodCheckingRest.getCoverageOfJiraIssue(request, settings);
+		assertEquals(400, response.getStatus());
+	}
+
+	@Test
+	@NonTransactional
+	public void testGetCoverageOfJiraIssueSelectedElementInvalid() {
+		settings = new FilterSettings("TEST", "");
+		settings.setSelectedElement((KnowledgeElement) null);
+		Response response = dodCheckingRest.getCoverageOfJiraIssue(request, settings);
+		assertEquals(400, response.getStatus());
 	}
 }

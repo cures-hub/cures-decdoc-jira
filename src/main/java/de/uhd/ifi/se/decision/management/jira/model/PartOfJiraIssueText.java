@@ -170,7 +170,7 @@ public class PartOfJiraIssueText extends KnowledgeElement {
 		if (textWithTags == null || startPosition > textWithTags.length()) {
 			return "";
 		}
-		if (endPosition < textWithTags.length()) {
+		if (endPosition < textWithTags.length() && endPosition >= startPosition) {
 			return textWithTags.substring(startPosition, endPosition);
 		} else {
 			return textWithTags.substring(startPosition);

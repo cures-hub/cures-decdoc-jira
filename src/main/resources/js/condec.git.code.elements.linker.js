@@ -488,7 +488,7 @@ linkBranchCandidates
         }
 
 		function setStatusErrorInMenuItem() {
-			setStatusInMenuItem("condec-error");
+          setStatusInMenuItem("condec-error");
 		}
 
         function setStatusWarningInMenuItem() {

@@ -6,14 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.atlassian.jira.user.ApplicationUser;
-
 import de.uhd.ifi.se.decision.management.jira.TestSetUp;
 import de.uhd.ifi.se.decision.management.jira.filtering.FilterSettings;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeElement;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeType;
 import de.uhd.ifi.se.decision.management.jira.testdata.CodeFiles;
-import de.uhd.ifi.se.decision.management.jira.testdata.JiraUsers;
 import de.uhd.ifi.se.decision.management.jira.testdata.KnowledgeElements;
 import net.java.ao.test.jdbc.NonTransactional;
 
@@ -24,11 +21,10 @@ public class TestRationaleCoverageCalculator extends TestSetUp {
 	@Before
 	public void setUp() {
 		init();
-		ApplicationUser user = JiraUsers.SYS_ADMIN.getApplicationUser();
 		CodeFiles.addCodeFilesToKnowledgeGraph();
 		FilterSettings filterSettings = new FilterSettings("TEST", "");
 		String sourceKnowledgeTypes = "Task";
-		calculator = new RationaleCoverageCalculator(user, filterSettings, sourceKnowledgeTypes);
+		calculator = new RationaleCoverageCalculator(filterSettings, sourceKnowledgeTypes);
 	}
 
 	@Test
@@ -40,9 +36,8 @@ public class TestRationaleCoverageCalculator extends TestSetUp {
 	@Test
 	@NonTransactional
 	public void testRationaleCoverageCalculatorNoTypes() {
-		ApplicationUser user = JiraUsers.SYS_ADMIN.getApplicationUser();
 		FilterSettings filterSettings = new FilterSettings("TEST", "");
-		RationaleCoverageCalculator newCalculator = new RationaleCoverageCalculator(user, filterSettings, "");
+		RationaleCoverageCalculator newCalculator = new RationaleCoverageCalculator(filterSettings, "");
 		assertNotNull(newCalculator);
 	}
 

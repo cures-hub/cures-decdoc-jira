@@ -25,18 +25,18 @@ import de.uhd.ifi.se.decision.management.jira.testdata.JiraUsers;
 import de.uhd.ifi.se.decision.management.jira.testdata.KnowledgeElements;
 import net.java.ao.test.jdbc.NonTransactional;
 
-public class TestAlternativeCompletenessCheck extends TestSetUp {
+public class TestAlternativeCheck extends TestSetUp {
 
 	private KnowledgeElement alternative;
 	private ApplicationUser user;
-	private AlternativeCompletenessCheck alternativeCompletenessCheck;
+	private AlternativeCheck alternativeCompletenessCheck;
 
 	@Before
 	public void setUp() {
 		init();
 		user = JiraUsers.SYS_ADMIN.getApplicationUser();
 		alternative = KnowledgeElements.getAlternative();
-		alternativeCompletenessCheck = new AlternativeCompletenessCheck();
+		alternativeCompletenessCheck = new AlternativeCheck();
 	}
 
 	@Test
@@ -75,10 +75,10 @@ public class TestAlternativeCompletenessCheck extends TestSetUp {
 		DefinitionOfDone definitionOfDone = new DefinitionOfDone();
 		definitionOfDone.setAlternativeLinkedToArgument(true);
 		ConfigPersistenceManager.saveDefinitionOfDone("TEST", definitionOfDone);
-		assertTrue(alternativeCompletenessCheck.getFailedCriteria(alternative).isEmpty());
+		assertTrue(alternativeCompletenessCheck.getQualityProblems(alternative, definitionOfDone).isEmpty());
 
 		KnowledgeElement alternative = JiraIssues.addElementToDataBase(42, KnowledgeType.ALTERNATIVE);
-		assertFalse(alternativeCompletenessCheck.getFailedCriteria(alternative).isEmpty());
+		assertFalse(alternativeCompletenessCheck.getQualityProblems(alternative, definitionOfDone).isEmpty());
 	}
 
 	@Test

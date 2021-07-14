@@ -9,8 +9,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.user.ApplicationUser;
-
 import de.uhd.ifi.se.decision.management.jira.filtering.FilterSettings;
 import de.uhd.ifi.se.decision.management.jira.filtering.FilteringManager;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeElement;
@@ -23,7 +21,7 @@ import de.uhd.ifi.se.decision.management.jira.model.KnowledgeType;
 public class RationaleCompletenessCalculator {
 
 	@JsonIgnore
-	private FilteringManager filteringManager;
+	private FilterSettings filterSettings;
 
 	private Map<String, String> issuesSolvedByDecision;
 	private Map<String, String> decisionsSolvingIssues;
@@ -35,8 +33,8 @@ public class RationaleCompletenessCalculator {
 	@JsonIgnore
 	protected static final Logger LOGGER = LoggerFactory.getLogger(RationaleCompletenessCalculator.class);
 
-	public RationaleCompletenessCalculator(ApplicationUser user, FilterSettings filterSettings) {
-		this.filteringManager = new FilteringManager(filterSettings);
+	public RationaleCompletenessCalculator(FilterSettings filterSettings) {
+		this.filterSettings = filterSettings;
 
 		this.issuesSolvedByDecision = calculateElementsWithNeighborsOfOtherType(KnowledgeType.ISSUE,
 				KnowledgeType.DECISION);
@@ -56,24 +54,24 @@ public class RationaleCompletenessCalculator {
 			KnowledgeType targetElementType) {
 		LOGGER.info("RequirementsDashboard getElementsWithNeighborsOfOtherType");
 
-		KnowledgeGraph graph = filteringManager.getFilteredGraph();
+		KnowledgeGraph graph = new FilteringManager(filterSettings).getFilteredGraph();
 		List<KnowledgeElement> allSourceElements = graph.getElements(sourceElementType);
-		String sourceElementsWithTargetTypeLinked = "";
-		String sourceElementsWithoutTargetTypeLinked = "";
+		StringBuilder sourceElementsWithTargetTypeLinked = new StringBuilder();
+		StringBuilder sourceElementsWithoutTargetTypeLinked = new StringBuilder();
 
 		for (KnowledgeElement sourceElement : allSourceElements) {
 			if (sourceElement.hasNeighborOfType(targetElementType)) {
-				sourceElementsWithTargetTypeLinked += sourceElement.getKey() + " ";
+				sourceElementsWithTargetTypeLinked.append(sourceElement.getKey()).append(" ");
 			} else {
-				sourceElementsWithoutTargetTypeLinked += sourceElement.getKey() + " ";
+				sourceElementsWithoutTargetTypeLinked.append(sourceElement.getKey()).append(" ");
 			}
 		}
 
-		Map<String, String> havingLinkMap = new LinkedHashMap<String, String>();
-		havingLinkMap.put(sourceElementType.toString() + " has " + targetElementType.toString(),
-				sourceElementsWithTargetTypeLinked.trim());
-		havingLinkMap.put(sourceElementType.toString() + " has no " + targetElementType.toString(),
-				sourceElementsWithoutTargetTypeLinked.trim());
+		Map<String, String> havingLinkMap = new LinkedHashMap<>();
+		havingLinkMap.put(sourceElementType + " has " + targetElementType,
+				sourceElementsWithTargetTypeLinked.toString().trim());
+		havingLinkMap.put(sourceElementType + " has no " + targetElementType,
+				sourceElementsWithoutTargetTypeLinked.toString().trim());
 		return havingLinkMap;
 	}
 

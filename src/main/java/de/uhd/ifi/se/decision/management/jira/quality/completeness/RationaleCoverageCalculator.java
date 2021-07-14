@@ -12,8 +12,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.jira.user.ApplicationUser;
-
 import de.uhd.ifi.se.decision.management.jira.filtering.FilterSettings;
 import de.uhd.ifi.se.decision.management.jira.filtering.FilteringManager;
 import de.uhd.ifi.se.decision.management.jira.model.DecisionKnowledgeProject;
@@ -31,8 +29,6 @@ public class RationaleCoverageCalculator {
 	@JsonIgnore
 	private FilterSettings filterSettings;
 	@JsonIgnore
-	private FilteringManager filteringManager;
-	@JsonIgnore
 	private Map<KnowledgeElement, Map<KnowledgeType, Integer>> linkedElementMap = new HashMap<>();
 
 	private Map<String, Integer> decisionsPerSelectedJiraIssue = new HashMap<>();
@@ -43,14 +39,12 @@ public class RationaleCoverageCalculator {
 	@JsonIgnore
 	private static final Logger LOGGER = LoggerFactory.getLogger(RationaleCompletenessCalculator.class);
 
-	public RationaleCoverageCalculator(String projectKey) {
-		this.filterSettings = new FilterSettings(projectKey, "");
+	public RationaleCoverageCalculator(FilterSettings filterSettings) {
+		this.filterSettings = filterSettings;
 	}
 
-	public RationaleCoverageCalculator(ApplicationUser user, FilterSettings filterSettings,
-			String sourceKnowledgeTypesString) {
+	public RationaleCoverageCalculator(FilterSettings filterSettings, String sourceKnowledgeTypesString) {
 		this.filterSettings = filterSettings;
-		this.filteringManager = new FilteringManager(filterSettings);
 
 		Set<String> sourceKnowledgeTypes;
 		if (sourceKnowledgeTypesString.isEmpty()) {
@@ -61,24 +55,26 @@ public class RationaleCoverageCalculator {
 		}
 
 		if (!sourceKnowledgeTypes.isEmpty()) {
-			fillRationaleCoverageCalculator(sourceKnowledgeTypes);
+			Set<KnowledgeElement> sourceKnowledgeElements = getKnowledgeElementsOfSourceTypes(sourceKnowledgeTypes);
+			fillRationaleCoverageCalculator(sourceKnowledgeElements);
 		}
 	}
 
-	private void fillRationaleCoverageCalculator(Set<String> sourceKnowledgeTypes) {
+	private void fillRationaleCoverageCalculator(Set<KnowledgeElement> sourceKnowledgeElements) {
 		this.decisionsPerSelectedJiraIssue = calculateNumberOfDecisionKnowledgeElementsForKnowledgeElements(
-				sourceKnowledgeTypes, KnowledgeType.DECISION);
+			sourceKnowledgeElements, KnowledgeType.DECISION);
 		this.issuesPerSelectedJiraIssue = calculateNumberOfDecisionKnowledgeElementsForKnowledgeElements(
-				sourceKnowledgeTypes, KnowledgeType.ISSUE);
+			sourceKnowledgeElements, KnowledgeType.ISSUE);
 		this.decisionDocumentedForSelectedJiraIssue = calculateKnowledgeElementsWithNeighborsOfOtherType(
-				sourceKnowledgeTypes, KnowledgeType.DECISION);
+			sourceKnowledgeElements, KnowledgeType.DECISION);
 		this.issueDocumentedForSelectedJiraIssue = calculateKnowledgeElementsWithNeighborsOfOtherType(
-				sourceKnowledgeTypes, KnowledgeType.ISSUE);
+			sourceKnowledgeElements, KnowledgeType.ISSUE);
 	}
 
 	private void fillLinkedElementMap(KnowledgeElement sourceElement) {
 		Map<KnowledgeType, Integer> knowledgeTypeMap = new HashMap<>();
-		Set<KnowledgeElement> linkedElements = sourceElement.getLinkedElements(filterSettings.getLinkDistance());
+		Set<KnowledgeElement> linkedElements = sourceElement.getLinkedElements(
+			filterSettings.getDefinitionOfDone().getMaximumLinkDistanceToDecisions());
 		for (KnowledgeElement linkedElement : linkedElements) {
 			if (!knowledgeTypeMap.containsKey(linkedElement.getType())) {
 				knowledgeTypeMap.put(linkedElement.getType(), 0);
@@ -96,16 +92,9 @@ public class RationaleCoverageCalculator {
 		}
 	}
 
-	private Map<String, String> calculateKnowledgeElementsWithNeighborsOfOtherType(Set<String> sourceTypes,
-			KnowledgeType knowledgeType) {
-		LOGGER.info("RationaleCoverageCalculator getKnowledgeElementsWithNeighborsOfOtherType");
-
-		if (knowledgeType == null) {
-			return null;
-		}
-
-		KnowledgeGraph graph = filteringManager.getFilteredGraph();
+	private Set<KnowledgeElement> getKnowledgeElementsOfSourceTypes(Set<String> sourceTypes) {
 		Set<KnowledgeElement> knowledgeElements = new HashSet<>();
+		KnowledgeGraph graph = new FilteringManager(filterSettings).getFilteredGraph();
 		for (String sourceType : sourceTypes) {
 			KnowledgeType type = KnowledgeType.getKnowledgeType(sourceType);
 			if (type == KnowledgeType.OTHER || type == KnowledgeType.CODE) {
@@ -115,13 +104,24 @@ public class RationaleCoverageCalculator {
 			}
 		}
 
+		return knowledgeElements;
+	}
+
+	private Map<String, String> calculateKnowledgeElementsWithNeighborsOfOtherType(
+		Set<KnowledgeElement> sourceKnowledgeElements, KnowledgeType knowledgeType) {
+		LOGGER.info("RationaleCoverageCalculator calculateKnowledgeElementsWithNeighborsOfOtherType");
+
+		if (knowledgeType == null) {
+			return null;
+		}
+
 		int minimumDecisionCoverage = filterSettings.getDefinitionOfDone().getMinimumDecisionsWithinLinkDistance();
 
 		StringBuilder withHighLinks = new StringBuilder();
 		StringBuilder withLowLinks = new StringBuilder();
 		StringBuilder withoutLinks = new StringBuilder();
 
-		for (KnowledgeElement knowledgeElement : knowledgeElements) {
+		for (KnowledgeElement knowledgeElement : sourceKnowledgeElements) {
 			if (!linkedElementMap.containsKey(knowledgeElement)) {
 				fillLinkedElementMap(knowledgeElement);
 			}
@@ -143,42 +143,34 @@ public class RationaleCoverageCalculator {
 		return result;
 	}
 
-	private Map<String, Integer> calculateNumberOfDecisionKnowledgeElementsForKnowledgeElements(Set<String> sourceTypes,
-			KnowledgeType knowledgeType) {
-		LOGGER.info("RationaleCoverageCalculator getNumberOfDecisionKnowledgeElementsForKnowledgeElements");
+	private Map<String, Integer> calculateNumberOfDecisionKnowledgeElementsForKnowledgeElements(
+		Set<KnowledgeElement> sourceKnowledgeElements, KnowledgeType knowledgeType) {
+		LOGGER.info("RationaleCoverageCalculator calculateNumberOfDecisionKnowledgeElementsForKnowledgeElements");
 
 		if (knowledgeType == null) {
 			return null;
 		}
 
-		KnowledgeGraph graph = filteringManager.getFilteredGraph();
-		Set<KnowledgeElement> knowledgeElements = new HashSet<>();
-		for (String sourceType : sourceTypes) {
-			KnowledgeType type = KnowledgeType.getKnowledgeType(sourceType);
-			if (type == KnowledgeType.OTHER || type == KnowledgeType.CODE) {
-				knowledgeElements.addAll(graph.getElements(sourceType));
-			} else {
-				knowledgeElements.addAll(graph.getElements(type));
-			}
-		}
-
 		Map<String, Integer> numberOfElementsReachable = new HashMap<>();
-		for (KnowledgeElement knowledgeElement : knowledgeElements) {
+		for (KnowledgeElement knowledgeElement : sourceKnowledgeElements) {
 			if (!linkedElementMap.containsKey(knowledgeElement)) {
 				fillLinkedElementMap(knowledgeElement);
 			}
-			if (!linkedElementMap.get(knowledgeElement).containsKey(knowledgeType)) {
-				numberOfElementsReachable.put(getKnowledgeElementName(knowledgeElement), 0);
-			} else {
-				numberOfElementsReachable.put(getKnowledgeElementName(knowledgeElement),
-						linkedElementMap.get(knowledgeElement).get(knowledgeType));
-			}
+			numberOfElementsReachable.put(getKnowledgeElementName(knowledgeElement),
+				linkedElementMap.get(knowledgeElement).getOrDefault(knowledgeType, 0));
 		}
+
 		return numberOfElementsReachable;
 	}
 
 	public int calculateNumberOfDecisionKnowledgeElementsForKnowledgeElement(KnowledgeElement knowledgeElement,
 			KnowledgeType knowledgeType) {
+		LOGGER.info("RationaleCoverageCalculator calculateNumberOfDecisionKnowledgeElementsForKnowledgeElement");
+
+		if (knowledgeType == null) {
+			return 0;
+		}
+
 		if (knowledgeElement.getLinks().isEmpty()) {
 			if (knowledgeElement.getType() == knowledgeType) {
 				return 1;
@@ -191,11 +183,8 @@ public class RationaleCoverageCalculator {
 		if (!linkedElementMap.containsKey(knowledgeElement)) {
 			fillLinkedElementMap(knowledgeElement);
 		}
-		if (!linkedElementMap.get(knowledgeElement).containsKey(knowledgeType)) {
-			numberOfElementsReachable = 0;
-		} else {
-			numberOfElementsReachable = linkedElementMap.get(knowledgeElement).get(knowledgeType);
-		}
+		numberOfElementsReachable = linkedElementMap.get(knowledgeElement).getOrDefault(knowledgeType, 0);
+
 		return numberOfElementsReachable;
 	}
 

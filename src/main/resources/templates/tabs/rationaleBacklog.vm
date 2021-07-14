@@ -5,20 +5,20 @@
         <div id="rationale-backlog-tree"></div>
     </div>
     <div class="right">
-	   #parse("templates/tabs/subgraphDetails.vm")
+	    #parse("templates/tabs/subgraphDetails.vm")
     </div>
 </div>
 <script>	
 $(document).ready(function () {
-#if(!$codeFileName) 
+#if(!$codeFileName)
 	/* Inits rationale backlog as the default tab */
-	conDecRationaleBacklog.initView();
-#else	
+    conDecRationaleBacklog.initView();
+#else
 	/* Adds the on click listener on tab opening */
 	var isOnceClicked = false;
 	AJS.$("#knowledge-page-tabs").on("tabSelect", function(event) {
 		if (!isOnceClicked && event.target.href.includes("#rationale-backlog-tab")) {
-			conDecRationaleBacklog.initView();
+		    conDecRationaleBacklog.initView();
 			isOnceClicked = true;
 		}
 	});

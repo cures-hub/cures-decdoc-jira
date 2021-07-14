@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import de.uhd.ifi.se.decision.management.jira.quality.completeness.DecisionProblemCompletenessCheck;
+import de.uhd.ifi.se.decision.management.jira.quality.completeness.IssueCheck;
 
 /**
  * Status of decision problems (=issues) and solution options (=decisions and
@@ -84,7 +84,7 @@ public enum KnowledgeStatus {
 
 	public static KnowledgeStatus getNewStatus(KnowledgeElement element) {
 		if (element.getType().getSuperType() == KnowledgeType.PROBLEM) {
-			if (DecisionProblemCompletenessCheck.isValidDecisionLinkedToDecisionProblem(element)) {
+			if (IssueCheck.isValidDecisionLinkedToDecisionProblem(element)) {
 				return KnowledgeStatus.RESOLVED;
 			}
 			return KnowledgeStatus.UNRESOLVED;

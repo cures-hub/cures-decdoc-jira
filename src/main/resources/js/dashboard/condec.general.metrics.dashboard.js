@@ -79,7 +79,6 @@
 	}
 
 	ConDecGeneralMetricsDashboard.prototype.processDataBad = function processDataBad(data) {
-		console.log(data.responseJSON.error);
 		showDashboardSection(dashboardDataErrorNode);
 	};
 

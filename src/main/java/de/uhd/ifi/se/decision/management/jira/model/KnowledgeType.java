@@ -289,6 +289,10 @@ public enum KnowledgeType {
 		return requirementsTypes;
 	}
 
+	public boolean isDecisionKnowledge() {
+		return this != CODE && this != OTHER;
+	}
+
 	public String getTag() {
 		if (this == KnowledgeType.OTHER || name().isBlank()) {
 			return "";

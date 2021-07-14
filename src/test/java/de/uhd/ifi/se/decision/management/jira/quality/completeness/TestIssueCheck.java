@@ -20,15 +20,15 @@ import de.uhd.ifi.se.decision.management.jira.persistence.ConfigPersistenceManag
 import de.uhd.ifi.se.decision.management.jira.testdata.KnowledgeElements;
 import net.java.ao.test.jdbc.NonTransactional;
 
-public class TestIssueCompletenessCheck extends TestSetUp {
+public class TestIssueCheck extends TestSetUp {
 
 	private KnowledgeElement issue;
-	private DecisionProblemCompletenessCheck issueCompletenessCheck;
+	private IssueCheck issueCompletenessCheck;
 
 	@Before
 	public void setUp() {
 		init();
-		issueCompletenessCheck = new DecisionProblemCompletenessCheck();
+		issueCompletenessCheck = new IssueCheck();
 		issue = KnowledgeElements.getSolvedDecisionProblem();
 	}
 
@@ -53,7 +53,7 @@ public class TestIssueCompletenessCheck extends TestSetUp {
 		assertEquals(3, alternative.getId());
 		assertNotNull(issue.getLink(alternative));
 		issue.setStatus(KnowledgeStatus.RESOLVED);
-		assertTrue(new DecisionProblemCompletenessCheck().execute(issue));
+		assertTrue(new IssueCheck().execute(issue));
 	}
 
 	@Test
@@ -96,8 +96,8 @@ public class TestIssueCompletenessCheck extends TestSetUp {
 		definitionOfDone.setIssueLinkedToAlternative(true);
 		ConfigPersistenceManager.saveDefinitionOfDone("TEST", definitionOfDone);
 		issue.setStatus(KnowledgeStatus.RESOLVED);
-		assertTrue(issueCompletenessCheck.getFailedCriteria(issue).isEmpty());
-		assertFalse(issueCompletenessCheck.getFailedCriteria(KnowledgeElements.getUnsolvedDecisionProblem()).isEmpty());
+		assertTrue(issueCompletenessCheck.getQualityProblems(issue, definitionOfDone).isEmpty());
+		assertFalse(issueCompletenessCheck.getQualityProblems(KnowledgeElements.getUnsolvedDecisionProblem(), definitionOfDone).isEmpty());
 	}
 
 	@After

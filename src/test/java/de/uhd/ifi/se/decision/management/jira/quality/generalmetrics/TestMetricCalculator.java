@@ -70,4 +70,10 @@ public class TestMetricCalculator extends TestSetUpGit {
 		assertEquals(calculator.getNumberOfCommits().size(), 0);
 	}
 
+	@Test
+	@NonTransactional
+	public void testGetDefinitionOfDoneCheckResults() {
+		assertEquals(calculator.getDefinitionOfDoneCheckResults().size(), 2);
+	}
+
 }

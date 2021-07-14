@@ -5,12 +5,11 @@
     <br/>
 
     <div class="quality-check-container">
-        The definition of done reqiures a minimum coverage of <label id="condec-prompt-minimum-coverage"></label> within
-        a link distance of <label id="condec-prompt-link-distance"></label>.
+        The definition of done requires a minimum coverage of <label id="condec-prompt-minimum-coverage"></label> decisions
+        within a link distance of <label id="condec-prompt-link-distance"></label>.
 
         <br/>
-        This element is currently covered by <label id="condec-prompt-issue-coverage"></label> issues and <label
-        id="condec-prompt-decision-coverage"></label> decisions.
+        This element is currently covered by <label id="condec-prompt-decision-coverage"></label> decisions.
 
     </div>
     <button id="go-to-quality-check-tab" class="aui-button aui-button-link">

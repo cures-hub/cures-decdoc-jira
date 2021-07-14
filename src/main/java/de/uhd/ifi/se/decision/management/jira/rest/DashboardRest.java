@@ -26,6 +26,14 @@ import de.uhd.ifi.se.decision.management.jira.quality.generalmetrics.GeneralMetr
 @Path("/dashboard")
 public class DashboardRest {
 
+	/**
+	 * Get general metrics for the elements of the knowledge graph filtered by the filter settings.
+	 *
+	 * @param request
+	 * @param filterSettings
+	 * @return GeneralMetricsCalculator
+	 * An object containing the metrics.
+	 */
 	@Path("/generalMetrics")
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -42,6 +50,15 @@ public class DashboardRest {
 		return Response.status(Status.OK).entity(generalMetricsCalculator).build();
 	}
 
+	/**
+	 * Get metrics about the intra-rationale completeness for the elements of the knowledge graph filtered
+	 * by the filter settings.
+	 *
+	 * @param request
+	 * @param filterSettings
+	 * @return RationaleCompletenessCalculator
+	 * An object containing the metrics.
+	 */
 	@Path("/rationaleCompleteness")
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -51,14 +68,21 @@ public class DashboardRest {
 					.build();
 		}
 
-		ApplicationUser user = AuthenticationManager.getUser(request);
-
 		RationaleCompletenessCalculator rationaleCompletenessCalculator =
-			new RationaleCompletenessCalculator(user, filterSettings);
+			new RationaleCompletenessCalculator(filterSettings);
 
 		return Response.status(Status.OK).entity(rationaleCompletenessCalculator).build();
 	}
 
+	/**
+	 * Get metrics about the rationale coverage for the elements of the knowledge graph filtered
+	 * by the filter settings.
+	 *
+	 * @param request
+	 * @param filterSettings
+	 * @return RationaleCoverageCalculator
+	 * An object containing the metrics.
+	 */
 	@Path("/rationaleCoverage")
 	@POST
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -69,9 +93,7 @@ public class DashboardRest {
 					.build();
 		}
 
-		ApplicationUser user = AuthenticationManager.getUser(request);
-
-		RationaleCoverageCalculator rationaleCoverageCalculator = new RationaleCoverageCalculator(user, filterSettings, sourceKnowledgeTypes);
+		RationaleCoverageCalculator rationaleCoverageCalculator = new RationaleCoverageCalculator(filterSettings, sourceKnowledgeTypes);
 
 		return Response.status(Status.OK).entity(rationaleCoverageCalculator).build();
 	}

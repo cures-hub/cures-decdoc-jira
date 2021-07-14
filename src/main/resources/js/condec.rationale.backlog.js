@@ -7,7 +7,6 @@
 	};
 
 	ConDecRationaleBacklog.prototype.initView = function () {
-		console.log("conDecRationaleBacklog initView");
 			
 		// Fill filter elements
 		conDecFiltering.fillFilterElements("rationale-backlog", ["Alternative", "Decision", "Issue", "Argument"]);
@@ -62,7 +61,7 @@
 			conDecVis.buildVis(filterSettings, "graph-rationale-backlog");
 			conDecMatrix.buildMatrix(filterSettings, "rationale-backlog");
 			conDecDecisionTable.build(filterSettings, "rationale-backlog", node);
-			conDecQualityCheck.build(node, "rationale-backlog");
+			conDecQualityCheck.initView("rationale-backlog", node);
 		});
 	}
 	

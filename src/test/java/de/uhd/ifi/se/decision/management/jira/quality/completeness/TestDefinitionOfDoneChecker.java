@@ -4,21 +4,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import de.uhd.ifi.se.decision.management.jira.TestSetUp;
+import de.uhd.ifi.se.decision.management.jira.filtering.FilterSettings;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeElement;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeStatus;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeType;
 import de.uhd.ifi.se.decision.management.jira.recommendation.decisionguidance.ElementRecommendation;
 import de.uhd.ifi.se.decision.management.jira.testdata.CodeFiles;
 import de.uhd.ifi.se.decision.management.jira.testdata.KnowledgeElements;
-import org.junit.Before;
-import org.junit.Test;
 import net.java.ao.test.jdbc.NonTransactional;
-
-import de.uhd.ifi.se.decision.management.jira.TestSetUp;
-import de.uhd.ifi.se.decision.management.jira.filtering.FilterSettings;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TestDefinitionOfDoneChecker extends TestSetUp {
 
@@ -47,10 +47,10 @@ public class TestDefinitionOfDoneChecker extends TestSetUp {
 	@Test
 	@NonTransactional
 	public void testDefinitionOfDoneCheck() {
-		List<String> list = new ArrayList<>();
-		list.add("hasIncompleteKnowledgeLinked");
-		list.add("doesNotHaveMinimumCoverage");
-		assertEquals(DefinitionOfDoneChecker.getFailedDefinitionOfDoneCheckCriteria(knowledgeElement, filterSettings), list);
+		List<QualityProblem> list = new ArrayList<>();
+		list.add(QualityProblem.DECISION_COVERAGE_TOO_LOW);
+		list.add(QualityProblem.INCOMPLETE_KNOWLEDGE_LINKED);
+		assertEquals(DefinitionOfDoneChecker.getQualityProblems(knowledgeElement, filterSettings), list);
 	}
 
 	@Test
@@ -80,21 +80,21 @@ public class TestDefinitionOfDoneChecker extends TestSetUp {
 	@Test
 	@NonTransactional
 	public void testCompleteCodeFile() {
-		assertFalse(DefinitionOfDoneChecker.checkDefinitionOfDone(codeFile, filterSettings));
+		assertTrue(DefinitionOfDoneChecker.checkDefinitionOfDone(codeFile, filterSettings));
 	}
 
 	@Test
 	@NonTransactional
 	public void testCoverageHandlerDoesNotHaveMinimumCoverageTrue() {
 		assertTrue(DefinitionOfDoneChecker.doesNotHaveMinimumCoverage(KnowledgeElements.getTestKnowledgeElement(),
-			KnowledgeType.DECISION, filterSettings));
+				KnowledgeType.DECISION, filterSettings));
 	}
 
 	@Test
 	@NonTransactional
 	public void testCoverageHandlerDoesNotHaveMinimumCoverageFalse() {
 		assertFalse(DefinitionOfDoneChecker.doesNotHaveMinimumCoverage(KnowledgeElements.getTestKnowledgeElement(),
-			KnowledgeType.OTHER, filterSettings));
+				KnowledgeType.OTHER, filterSettings));
 	}
 
 	@Test

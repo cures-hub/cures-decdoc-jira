@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
+import org.jgrapht.alg.shortestpath.TreeSingleSourcePathsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +22,8 @@ import de.uhd.ifi.se.decision.management.jira.model.KnowledgeStatus;
 import de.uhd.ifi.se.decision.management.jira.model.KnowledgeType;
 import de.uhd.ifi.se.decision.management.jira.model.Link;
 import de.uhd.ifi.se.decision.management.jira.model.LinkType;
-import de.uhd.ifi.se.decision.management.jira.quality.completeness.CompletenessCheck;
 import de.uhd.ifi.se.decision.management.jira.quality.completeness.DefinitionOfDone;
+import de.uhd.ifi.se.decision.management.jira.quality.completeness.KnowledgeElementCheck;
 
 /**
  * Filters the {@link KnowledgeGraph}. The filter criteria are specified in the
@@ -76,8 +77,12 @@ public class FilteringManager {
 		Set<KnowledgeElement> elements = getElementsMatchingFilterSettings();
 		KnowledgeGraph filteredGraph = graph.getMutableSubgraphFor(elements);
 
-		if (filterSettings.createTransitiveLinks() && filterSettings.getSelectedElement() != null) {
-			addTransitiveLinksToFilteredGraph(filteredGraph);
+		if (filterSettings.getSelectedElement() != null) {
+			if (filterSettings.createTransitiveLinks()) {
+				addTransitiveLinksToFilteredGraph(filteredGraph);
+			} else {
+				filteredGraph = ensureThatFilteredGraphHasCorrectLinkDistance(filteredGraph);
+			}
 		}
 
 		removeLinksWithTypesNotInFilterSettings(filteredGraph);
@@ -155,6 +160,15 @@ public class FilteringManager {
 			}
 		}
 		return linksNotMatchingFilterSettings;
+	}
+
+	private KnowledgeGraph ensureThatFilteredGraphHasCorrectLinkDistance(KnowledgeGraph filteredGraph) {
+		SingleSourcePaths<KnowledgeElement, Link> paths = filteredGraph
+				.getShortestPathAlgorithm(filterSettings.getLinkDistance())
+				.getPaths(filterSettings.getSelectedElement());
+		Set<KnowledgeElement> reachableElements = ((TreeSingleSourcePathsImpl<KnowledgeElement, Link>) paths)
+				.getDistanceAndPredecessorMap().keySet();
+		return filteredGraph.getMutableSubgraphFor(reachableElements);
 	}
 
 	/**
@@ -328,8 +342,8 @@ public class FilteringManager {
 	 * @return always true if
 	 *         {@link FilterSettings#isOnlyIncompleteKnowledgeShown()} is false.
 	 *         True if the element is incompletely documented according to the
-	 *         {@link DefinitionOfDone} (checked by {@link CompletenessCheck}) and
-	 *         only incomplete knowledge elements should be shown
+	 *         {@link DefinitionOfDone} (checked by {@link KnowledgeElementCheck})
+	 *         and only incomplete knowledge elements should be shown
 	 *         ({@link FilterSettings#isOnlyIncompleteKnowledgeShown()} is true).
 	 *         False otherwise.
 	 */

@@ -11,14 +11,12 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.TreeSingleSourcePathsImpl;
-import org.jgrapht.graph.AsUndirectedGraph;
 
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.config.properties.APKeys;
@@ -539,8 +537,9 @@ public class KnowledgeElement {
 
 	/**
 	 * @return all links (=edges) of this element in the {@link KnowledgeGraph} as a
-	 *         set of {@link Link} objects, does contain Jira {@link IssueLink}s and
-	 *         generic links (e.g. links between code classes and Jira issues).
+	 *         set of {@link Link} objects (edge/relationship), does contain Jira
+	 *         {@link IssueLink}s and ConDec links (e.g. links between code classes
+	 *         and Jira issues).
 	 */
 	public Set<Link> getLinks() {
 		if (project == null) {
@@ -620,8 +619,7 @@ public class KnowledgeElement {
 
 	private ShortestPathAlgorithm<KnowledgeElement, Link> getShortestPathAlgorithm(int maxLinkDistance) {
 		KnowledgeGraph graph = KnowledgeGraph.getInstance(project);
-		Graph<KnowledgeElement, Link> undirectedGraph = new AsUndirectedGraph<KnowledgeElement, Link>(graph);
-		return new DijkstraShortestPath<>(undirectedGraph, maxLinkDistance);
+		return graph.getShortestPathAlgorithm(maxLinkDistance);
 	}
 
 	/**

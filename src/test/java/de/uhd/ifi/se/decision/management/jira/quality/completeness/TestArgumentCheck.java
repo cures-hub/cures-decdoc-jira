@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import de.uhd.ifi.se.decision.management.jira.persistence.ConfigPersistenceManager;
 import org.jgrapht.Graphs;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,17 +24,17 @@ import de.uhd.ifi.se.decision.management.jira.testdata.JiraUsers;
 import de.uhd.ifi.se.decision.management.jira.testdata.KnowledgeElements;
 import net.java.ao.test.jdbc.NonTransactional;
 
-public class TestArgumentCompletenessCheck extends TestSetUp {
+public class TestArgumentCheck extends TestSetUp {
 
 	private KnowledgeElement proArgument;
 	private ApplicationUser user;
-	private ArgumentCompletenessCheck argumentCompletenessCheck;
+	private ArgumentCheck argumentCompletenessCheck;
 
 	@Before
 	public void setUp() {
 		init();
 		user = JiraUsers.SYS_ADMIN.getApplicationUser();
-		argumentCompletenessCheck = new ArgumentCompletenessCheck();
+		argumentCompletenessCheck = new ArgumentCheck();
 		proArgument = KnowledgeElements.getProArgument();
 	}
 
@@ -86,39 +87,43 @@ public class TestArgumentCompletenessCheck extends TestSetUp {
 	@Test
 	@NonTransactional
 	public void testIsCompleteAccordingToSettings() {
-		assertTrue(argumentCompletenessCheck.isCompleteAccordingToSettings());
+		DefinitionOfDone definitionOfDone = ConfigPersistenceManager.getDefinitionOfDone("TEST");
+		assertTrue(argumentCompletenessCheck.isCompleteAccordingToSettings(definitionOfDone));
 	}
 
 	@Test
 	@NonTransactional
 	public void testGetFailedCriteriaNeighbourDecision() {
+		DefinitionOfDone definitionOfDone = new DefinitionOfDone();
 		assertEquals(KnowledgeType.ARGUMENT, proArgument.getType().replaceProAndConWithArgument());
 		assertEquals(5, proArgument.getId());
 		KnowledgeElement decision = KnowledgeElements.getDecision();
 		assertEquals(KnowledgeType.DECISION, decision.getType());
 		assertEquals(4, decision.getId());
 		assertNotNull(proArgument.getLink(decision));
-		assertTrue(argumentCompletenessCheck.getFailedCriteria(proArgument).isEmpty());
+		assertTrue(argumentCompletenessCheck.getQualityProblems(proArgument, definitionOfDone).isEmpty());
 	}
 
 	@Test
 	@NonTransactional
 	public void testGetFailedCriteriaNeighbourAlternative() {
+		DefinitionOfDone definitionOfDone = new DefinitionOfDone();
 		KnowledgeElement alternative = JiraIssues.addElementToDataBase(321, KnowledgeType.ALTERNATIVE);
 		assertEquals(KnowledgeType.ARGUMENT, proArgument.getType().replaceProAndConWithArgument());
 		KnowledgeElement proArgument = JiraIssues.addElementToDataBase(322, KnowledgeType.PRO);
 		assertEquals(KnowledgeType.ALTERNATIVE, alternative.getType());
 		KnowledgePersistenceManager.getOrCreate("TEST").insertLink(proArgument, alternative, user);
 		assertNotNull(proArgument.getLink(alternative));
-		assertTrue(argumentCompletenessCheck.getFailedCriteria(proArgument).isEmpty());
+		assertTrue(argumentCompletenessCheck.getQualityProblems(proArgument, definitionOfDone).isEmpty());
 	}
 
 	@Test
 	@NonTransactional
 	public void testGetFailedCriteriaNeighbourNoDecisionOrAlternative() {
+		DefinitionOfDone definitionOfDone = new DefinitionOfDone();
 		KnowledgeElement decision = KnowledgeElements.getDecision();
 		Link linkToDecision = proArgument.getLink(decision);
 		KnowledgeGraph.getInstance("TEST").removeEdge(linkToDecision);
-		assertFalse(argumentCompletenessCheck.getFailedCriteria(proArgument).isEmpty());
+		assertFalse(argumentCompletenessCheck.getQualityProblems(proArgument, definitionOfDone).isEmpty());
 	}
 }

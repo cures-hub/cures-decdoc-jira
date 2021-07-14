@@ -1,25 +1,23 @@
 <div class="quality-check-container">
-    <div class="text-field">
-        <label for="condec-tab-minimum-coverage-$viewIdentifier">$i18n.getText("condec.label.quality.check.minimum.coverage")</label>
-        <label id="condec-tab-minimum-coverage-$viewIdentifier"></label>
-    </div>
-    <div class="text-field">
-        <label for="condec-tab-link-distance-$viewIdentifier">$i18n.getText("condec.label.quality.check.link.distance")</label>
-        <label id="condec-tab-link-distance-$viewIdentifier"></label>
-    </div>
-    <div class="text-field" id="quality-check-issue-text-$viewIdentifier">
-    </div>
-    <div class="text-field" id="quality-check-decision-text-$viewIdentifier">
-    </div>
-    <div class="text-field" id="quality-check-knowledge-complete-text-$viewIdentifier">
-    </div>
-    <div class="text-field" id="quality-check-knowledge-complete-criteria-text-$viewIdentifier">
+    <label id="quality-check-issue-key-$viewIdentifier"></label> requires <label id="quality-check-minimum-coverage-$viewIdentifier"></label>
+    within a link distance of <label id="quality-check-link-distance-$viewIdentifier"></label>.
+
+    <br/>
+
+    It reaches <label id="quality-check-coverage-$viewIdentifier"></label>.
+
+    <br/>
+    <br/>
+
+    <div class="text-field" id="quality-check-problems-text-$viewIdentifier">
     </div>
 </div>
 
 <script>
-    /* Adds the on click listener on tab opening */
+    /* Fills tab when the document is ready */
     $(document).ready(function () {
-        conDecQualityCheck.initView("jira-issue-module");
+        if (AJS.$("#jira-issue-tabs").length) {
+            conDecQualityCheck.initView("jira-issue-module", null);
+        }
     });
 </script>
